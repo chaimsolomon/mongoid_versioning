@@ -28,7 +28,7 @@ TODO
 
 ## Further Reading
 
-See [Further Thoughts on How to Track Versions with MongoDB](http://askasya.com/post/revisitversions)
+See [How to Track Versions with MongoDB](http://askasya.com/post/trackversions) and [Further Thoughts on How to Track Versions with MongoDB](http://askasya.com/post/revisitversions).
 
 ## Contributing
 
