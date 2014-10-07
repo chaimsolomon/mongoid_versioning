@@ -10,7 +10,7 @@ module MongoidVersioning
     
     describe '.versioned_collection_name' do
       it 'infers name for version collection' do
-        Document.versioned_collection_name.must_equal 'documents.versions'
+        Document.versioned_collection_name.must_equal "#{Document.collection.name}.versions"
       end
     end
 
