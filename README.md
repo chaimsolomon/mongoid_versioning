@@ -2,7 +2,9 @@
 
 [![Build Status](https://travis-ci.org/tomasc/mongoid_versioning.svg)](https://travis-ci.org/tomasc/mongoid_versioning) [![Gem Version](https://badge.fury.io/rb/mongoid_versioning.svg)](http://badge.fury.io/rb/mongoid_versioning) [![Coverage Status](https://img.shields.io/coveralls/tomasc/mongoid_versioning.svg)](https://coveralls.io/r/tomasc/mongoid_versioning)
 
-Placing a document under version control is very unintrusive. Mongoid Versioning only adds a version number property (a field of type `Integer` called `_version`) to the document. It does not touch any other fields. In particular, it also does not place any requirements on the contents of the _id field.
+Placing a document under version control is very unintrusive. Mongoid Versioning only adds a version number property (a field of type `Integer` called `_version`) to the document. It does not touch any other fields. In particular, it also does not place any requirements on the contents of the `_id` field.
+
+Older revisions are stored in a separate collection that shadows the original collection. They are Mongoid documents themselves, and can be queried.
 
 ## Installation
 
