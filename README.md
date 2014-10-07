@@ -26,6 +26,10 @@ $ gem install mongoid_versioning
 
 TODO
 
+## Further Reading
+
+See [Further Thoughts on How to Track Versions with MongoDB](http://askasya.com/post/revisitversions)
+
 ## Contributing
 
 1. Fork it ( https://github.com/tomasc/mongoid_versioning/fork )
