@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/tomasc/mongoid_versioning.svg)](https://travis-ci.org/tomasc/mongoid_versioning) [![Gem Version](https://badge.fury.io/rb/mongoid_versioning.svg)](http://badge.fury.io/rb/mongoid_versioning) [![Coverage Status](https://img.shields.io/coveralls/tomasc/mongoid_versioning.svg)](https://coveralls.io/r/tomasc/mongoid_versioning)
 
+Placing a document under version control is very unintrusive. Mongoid Versioning only adds a version number property (an int32 called _version) to the document. It does not touch any other fields. In particular, it also does not place any requirements on the contents of the _id field.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -28,7 +30,7 @@ TODO
 
 ## Further Reading
 
-See [How to Track Versions with MongoDB](http://askasya.com/post/trackversions) and [Further Thoughts on How to Track Versions with MongoDB](http://askasya.com/post/revisitversions).
+See [How to Track Versions with MongoDB](http://askasya.com/post/trackversions), [Further Thoughts on How to Track Versions with MongoDB](http://askasya.com/post/revisitversions) and [Vermongo: Simple Document Versioning with MongoDB](https://github.com/thiloplanz/v7files/wiki/Vermongo).
 
 ## Contributing
 
