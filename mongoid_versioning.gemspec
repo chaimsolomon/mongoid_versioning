@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = MongoidVersioning::VERSION
   spec.authors       = ["Tomas Celizna"]
   spec.email         = ["tomas.celizna@gmail.com"]
-  spec.description   = %q{Versions Mongoid documents.}
-  spec.summary       = %q{Versions Mongoid documents.}
+  spec.description   = %q{Versioning Mongoid documents by means of separate collection.}
+  spec.summary       = %q{Versioning Mongoid documents by means of separate collection.}
   spec.homepage      = "https://github.com/tomasc/mongoid_versioning"
   spec.license       = "MIT"
 
