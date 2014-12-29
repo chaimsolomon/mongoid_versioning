@@ -1,27 +1,27 @@
-require 'test_helper'
+# require 'test_helper'
 
-class Document
-  include Mongoid::Document
-  include MongoidVersioning
+# class Document
+#   include Mongoid::Document
+#   include MongoidVersioning
 
-  embeds_many :embedded_documents
-end
+#   embeds_many :embedded_documents
+# end
 
-class EmbeddedDocument
-  include Mongoid::Document
-  include MongoidVersioning
+# class EmbeddedDocument
+#   include Mongoid::Document
+#   include MongoidVersioning
 
-  embedded_in :document
-end
+#   embedded_in :document
+# end
 
-module MongoidVersioning
-  describe 'Embedded Document' do
+# module MongoidVersioning
+#   describe 'Embedded Document' do
     
-    describe '.versioned_collection_name' do
-      it 'infers name for version collection' do
-        EmbeddedDocument.versioned_collection_name.must_equal "#{EmbeddedDocument.collection.name}.versions"
-      end
-    end
+#     describe '.versions_collection_name' do
+#       it 'infers name for version collection' do
+#         EmbeddedDocument.versions_collection_name.must_equal "#{EmbeddedDocument.collection.name}.versions"
+#       end
+#     end
 
-  end
-end
+#   end
+# end

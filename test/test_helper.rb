@@ -4,8 +4,11 @@ require 'minitest'
 require 'minitest/autorun'
 require 'minitest/spec'
 require 'mongoid'
+
 require 'mongoid_versioning'
 
+# ---------------------------------------------------------------------
+  
 if ENV["CI"]
   require "coveralls"
   Coveralls.wear!
