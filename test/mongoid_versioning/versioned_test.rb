@@ -112,24 +112,24 @@ module MongoidVersioning
         end
 
         describe 'subsequent revision' do
-          # let(:revised_document) { TestDocument.new }
+          let(:revised_document) { TestDocument.new }
 
-          # before do
-          #   revised_document.name = 'v1'
-          #   revised_document.revise
-          #   revised_document.name = 'v2'
-          #   revised_document.revise
-          #   revised_document.name = 'v3'
-          #   revised_document.revise
+          before do
+            revised_document.name = 'v1'
+            revised_document.revise
+            revised_document.name = 'v2'
+            revised_document.revise
+            revised_document.name = 'v3'
+            revised_document.revise
 
-          #   @current_doc = TestDocument.collection.where(_id: revised_document.id).first
-          # end
+            @current_doc = TestDocument.collection.where(_id: revised_document.id).first
+          end
 
-          # it 'updates the current document in the db' do
-          #   @current_doc['name'].must_equal 'v3'
-          #   @current_doc['_version'].must_equal 3
-          #   @current_doc['_based_on_version'].must_equal 2
-          # end
+          it 'updates the current document in the db' do
+            @current_doc['name'].must_equal 'v3'
+            @current_doc['_version'].must_equal 3
+            @current_doc['_based_on_version'].must_equal 2
+          end
         end
       end
 
