@@ -13,6 +13,7 @@ module MongoidVersioning
           { _orig_id: 1, _version: 1 }, { unique: true }
         )
 
+        before_save :set_version
         after_initialize :revert_id
       end
     end
@@ -47,8 +48,8 @@ module MongoidVersioning
       end
 
       # 3. insert new version
+      self._based_on_version = _version
       self._version = previous_version.to_i+1
-      self._based_on_version = previous_version
 
       self.class.collection.where(_id: id).upsert(self.as_document)
 
@@ -85,6 +86,10 @@ module MongoidVersioning
     def revert_id
       return unless self['_orig_id']
       self._id = self['_orig_id']
+    end
+
+    def set_version
+      self._version ||= 1
     end
   end
 end

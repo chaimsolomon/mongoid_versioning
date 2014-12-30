@@ -48,12 +48,10 @@ module MongoidVersioning
         it 'return false if invalid'
 
         describe 'new record' do
-          let(:new_document) { TestDocument.new }
-
           before do
-            new_document.revise
-            @current_docs = TestDocument.collection.where({ _id: new_document.id })
-            @version_docs = TestDocument.collection.database[TestDocument.versions_collection_name].where(_orig_id: new_document.id)
+            subject.revise
+            @current_docs = TestDocument.collection.where({ _id: subject.id })
+            @version_docs = TestDocument.collection.database[TestDocument.versions_collection_name].where(_orig_id: subject.id)
           end
 
           describe 'default collection' do
@@ -123,18 +121,16 @@ module MongoidVersioning
         # ---------------------------------------------------------------------
 
         describe 'subsequent revision' do
-          let(:revised_document) { TestDocument.new }
-
           before do
-            revised_document.name = 'v1'
-            revised_document.revise
-            revised_document.name = 'v2'
-            revised_document.revise
-            revised_document.name = 'v3'
-            revised_document.revise
+            subject.name = 'v1'
+            subject.revise
+            subject.name = 'v2'
+            subject.revise
+            subject.name = 'v3'
+            subject.revise
 
-            @current_docs = TestDocument.collection.where(_id: revised_document.id)
-            @version_docs = TestDocument.collection.database[TestDocument.versions_collection_name].where(_orig_id: revised_document.id)
+            @current_docs = TestDocument.collection.where(_id: subject.id)
+            @version_docs = TestDocument.collection.database[TestDocument.versions_collection_name].where(_orig_id: subject.id)
           end
 
           describe 'default collection' do
@@ -154,35 +150,59 @@ module MongoidVersioning
             end
           end
         end
+
+        # ---------------------------------------------------------------------
+        
+        describe 'revise on previous version' do
+          before do
+            subject.name = 'v1'
+            subject.revise
+            subject.name = 'v2'
+            subject.revise
+            subject.name = 'v3'
+            subject.revise
+
+            @new_version = subject.version(1)
+            @new_version.revise
+          end
+
+          it 'saves reverted attribute' do
+            @new_version.name.must_equal 'v1'
+          end
+          it 'updates :_version' do
+            @new_version._version.must_equal 4
+          end
+          it 'updates :_based_on_version' do
+            @new_version._based_on_version.must_equal 1
+          end
+        end
       end
 
       # =====================================================================
 
       describe 'versions' do
-        let(:document_with_versions) { TestDocument.new }
-
         before do
-          document_with_versions.name = 'v1'
-          document_with_versions.revise
-          document_with_versions.name = 'v2'
-          document_with_versions.revise
-          document_with_versions.name = 'v3'
-          document_with_versions.revise
-          document_with_versions.name = 'Foo'
+          subject.name = 'v1'
+          subject.revise
+          subject.name = 'v2'
+          subject.revise
+          subject.name = 'v3'
+          subject.revise
+          subject.name = 'Foo'
         end
 
         it 'returns an Array' do
-          document_with_versions.versions.must_be_kind_of Array
+          subject.versions.must_be_kind_of Array
         end
 
         # ---------------------------------------------------------------------
 
         describe '#previous_versions' do
           it 'returns everything but the latest' do
-            document_with_versions.previous_versions.map(&:_version).must_equal [2,1]
+            subject.previous_versions.map(&:_version).must_equal [2,1]
           end
           it 'correctly reverts document _ids' do
-            document_with_versions.previous_versions.map(&:id).uniq.must_equal [document_with_versions.id]
+            subject.previous_versions.map(&:id).uniq.must_equal [subject.id]
           end
         end
 
@@ -190,7 +210,7 @@ module MongoidVersioning
 
         describe '#latest_version' do
           it 'includes the latest version as in the database' do
-            document_with_versions.latest_version.name.wont_equal 'Foo'
+            subject.latest_version.name.wont_equal 'Foo'
           end
         end
 
@@ -198,7 +218,7 @@ module MongoidVersioning
 
         describe '#versions' do
           it 'returns all versions including the latest one' do
-            document_with_versions.versions.map(&:_version).must_equal [3,2,1]
+            subject.versions.map(&:_version).must_equal [3,2,1]
           end
         end
 
@@ -206,33 +226,31 @@ module MongoidVersioning
         # ---------------------------------------------------------------------
 
         describe '#version' do
-          let(:document_with_version) { TestDocument.new }
-
           before do
-            document_with_version.name = 'v1'
-            document_with_version.revise
-            document_with_version.name = 'v2'
-            document_with_version.revise
-            document_with_version.name = 'v3'
-            document_with_version.revise
-            document_with_version.name = 'Foo'
+            subject.name = 'v1'
+            subject.revise
+            subject.name = 'v2'
+            subject.revise
+            subject.name = 'v3'
+            subject.revise
+            subject.name = 'Foo'
           end
 
           describe 'when latest version' do
             it 'returns the version from db' do
-              document_with_version.version(3)._version.must_equal 3
+              subject.version(3)._version.must_equal 3
             end
           end
 
           describe 'when previous version' do
             it 'returns the version from db' do
-              document_with_version.version(1)._version.must_equal 1
+              subject.version(1)._version.must_equal 1
             end
           end
 
           describe 'when version does not exist' do
             it 'returns nil' do
-              document_with_version.version(10).must_be_nil
+              subject.version(10).must_be_nil
             end
           end
         end
