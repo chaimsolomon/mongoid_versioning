@@ -109,7 +109,7 @@ module MongoidVersioning
       end
 
       # 3. insert new version
-      self._based_on_version = _version
+      self._based_on_version = _version || previous_version
       self._version = previous_version.to_i+1
 
       self.class.collection.where(_id: id).upsert(self.as_document)

@@ -68,7 +68,7 @@ module MongoidVersioning
           before do
             subject.callbacks = []
             subject.revise
-            
+
             @current_docs = TestDocument.collection.where({ _id: subject.id })
             @version_docs = TestDocument.collection.database[TestDocument.versions_collection_name].where(_orig_id: subject.id)
           end
@@ -125,10 +125,10 @@ module MongoidVersioning
             it 'updates the document' do
               @current_docs.first['name'].must_equal 'Foo'
             end
-            it '_version to 1' do
+            it '_version to 2' do
               @current_docs.first['_version'].must_equal 2
             end
-            it 'sets the _based_on_version to nil' do
+            it 'sets the _based_on_version to 1' do
               @current_docs.first['_based_on_version'].must_equal 1
             end
             it 'maintains only one current doc' do
@@ -136,13 +136,19 @@ module MongoidVersioning
             end
           end
 
-          describe 'versions' do
+          describe 'previous versions' do
             it 'copies the latest version to .versions' do
               @version_docs.first.must_be :present?
             end
 
             it '_version to 1' do
               @version_docs.first['_version'].must_equal 1
+            end
+            it '_version to 1' do
+              @version_docs.first['_based_on_version'].must_equal nil
+            end
+            it 'is not updated' do
+              @version_docs.first['name'].wont_equal 'Foo'
             end
             it 'creates only one version' do
               @version_docs.count.must_equal 1
