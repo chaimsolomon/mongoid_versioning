@@ -52,6 +52,7 @@ module MongoidVersioning
 
       self.class.collection.where(_id: id).upsert(self.as_document)
 
+      # TODO
       # if (result.nModified != 1) {
       #    print("Someone got there first, replay flow to try again");
       # }
