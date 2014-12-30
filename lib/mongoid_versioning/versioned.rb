@@ -60,11 +60,11 @@ module MongoidVersioning
     # ---------------------------------------------------------------------
       
     def versions
-      latest_version.concat(previous_versions)
+      [latest_version].concat(previous_versions)
     end
 
     def latest_version
-      self.class.where(_id: id)
+      self.class.where(_id: id).first
     end
 
     def previous_versions

@@ -158,7 +158,7 @@ module MongoidVersioning
 
       # =====================================================================
 
-      describe '#versions' do
+      describe 'versions' do
         let(:document_with_versions) { TestDocument.new }
 
         before do
@@ -174,16 +174,29 @@ module MongoidVersioning
         it 'returns an Array' do
           document_with_versions.versions.must_be_kind_of Array
         end
-        it 'returns all versions including the latest one' do
-          document_with_versions.versions.map(&:_version).must_equal [3,2,1]
+
+        describe '#previous_versions' do
+          it 'returns everything but the latest' do
+            document_with_versions.previous_versions.map(&:_version).must_equal [2,1]
+          end
+          it 'correctly reverts document _ids' do
+            document_with_versions.versions.map(&:id).uniq.must_equal [document_with_versions.id]
+          end
         end
-        it 'includes the latest version as in the database' do
-          document_with_versions.versions.map(&:name).wont_include 'Foo'
+
+        describe '#previous_versions' do
+          it 'includes the latest version as in the database' do
+            document_with_versions.versions.map(&:name).wont_include 'Foo'
+          end
         end
-        it 'correctly reverts document _ids' do
-          document_with_versions.versions.map(&:id).uniq.must_equal [document_with_versions.id]
+
+        describe '#versions' do
+          it 'returns all versions including the latest one' do
+            document_with_versions.versions.map(&:_version).must_equal [3,2,1]
+          end
         end
       end
+
 
       # =====================================================================
 
