@@ -8,16 +8,18 @@ module MongoidVersioning
 
         field :_version, type: Integer
         field :_based_on_version, type: Integer
+
+        collection.database[versions_collection_name].indexes.create(
+          { _orig_id: 1, _version: 1 }, { unique: true }
+        )
+
+        after_initialize :revert_id
       end
     end
 
     # =====================================================================
 
     module ClassMethods
-      # def temp_collection_name
-      #   [collection.name, 'temp'].join('.')
-      # end
-
       def versions_collection_name
         [collection.name, 'versions'].join('.')
       end
@@ -55,8 +57,26 @@ module MongoidVersioning
       # }
     end
 
-    def revert_to version
+    # ---------------------------------------------------------------------
       
+    def versions
+      latest_version_criteria = self.class.
+        where(_id: id)
+
+      prev_versions_criteria = self.class.criteria.
+        with(collection: self.class.versions_collection_name).
+        where(_orig_id: id).
+        ne(_version: _version).
+        desc(:_version)
+
+      latest_version_criteria.concat(prev_versions_criteria)
+    end
+    
+    private # =============================================================
+    
+    def revert_id
+      return unless self['_orig_id']
+      self._id = self['_orig_id']
     end
 
   end
