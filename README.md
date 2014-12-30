@@ -51,6 +51,8 @@ doc._version # => 1
 doc._based_on_version # => nil
 ```
 
+The `#revise` method validates the document and runs `:revise`, `:save` and `:update` callbacks (resp. `:revise`, `:save` and `:create` for new record).
+
 ### Retrieving versions
 
 To access all previous versions:

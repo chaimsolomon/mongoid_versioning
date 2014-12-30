@@ -4,13 +4,30 @@ class TestDocument
   include Mongoid::Document
   include MongoidVersioning::Versioned
 
+  attr_accessor :callbacks
+
   field :name, type: String
+
+  validates :name, presence: true
+
+  before_revise -> i { i.callbacks = i.callbacks << 'before_revise' }
+  after_revise -> i { i.callbacks = i.callbacks << 'after_revise' }
+  before_save -> i { i.callbacks = i.callbacks << 'before_save' }
+  after_save -> i { i.callbacks = i.callbacks << 'after_save' }
+  before_update -> i { i.callbacks = i.callbacks << 'before_update' }
+  after_update -> i { i.callbacks = i.callbacks << 'after_update' }
+  before_create -> i { i.callbacks = i.callbacks << 'before_create' }
+  after_create -> i { i.callbacks = i.callbacks << 'after_create' }
+
+  def callbacks
+    @callbacks ||= []
+  end
 end
 
 module MongoidVersioning
   describe Versioned do
 
-    subject { TestDocument.new }
+    subject { TestDocument.new(name: 'Init') }
 
     # =====================================================================
 
@@ -39,14 +56,27 @@ module MongoidVersioning
     describe 'instance methods' do
       describe '#revise' do
 
-        it 'runs callbacks'
-        it 'return false if invalid'
+        describe 'when invalid' do
+          let(:invalid_document) { TestDocument.new }
+
+          it 'returns false' do
+            invalid_document.revise.must_equal false
+          end
+        end
 
         describe 'new record' do
           before do
+            subject.callbacks = []
             subject.revise
+            
             @current_docs = TestDocument.collection.where({ _id: subject.id })
             @version_docs = TestDocument.collection.database[TestDocument.versions_collection_name].where(_orig_id: subject.id)
+          end
+
+          describe 'callbacks' do
+            it 'runs :revise, :save, :create' do
+              subject.callbacks.must_equal %w(before_revise before_save before_create after_create after_save after_revise)
+            end
           end
 
           describe 'default collection' do
@@ -74,14 +104,21 @@ module MongoidVersioning
         # ---------------------------------------------------------------------
 
         describe 'existing record' do
-          let(:existing_document) { TestDocument.create }
+          let(:existing_document) { TestDocument.create(name: 'Init') }
 
           before do
+            existing_document.callbacks = []
             existing_document.name = 'Foo'
             existing_document.revise
 
             @current_docs = TestDocument.collection.where(_id: existing_document.id)
             @version_docs = TestDocument.collection.database[TestDocument.versions_collection_name].where(_orig_id: existing_document.id)
+          end
+
+          describe 'callbacks' do
+            it 'runs :revise, :save, :update' do
+              existing_document.callbacks.must_equal %w(before_revise before_save before_update after_update after_save after_revise)
+            end
           end
 
           describe 'default collection' do

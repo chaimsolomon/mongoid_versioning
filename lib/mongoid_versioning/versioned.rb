@@ -4,7 +4,7 @@ module MongoidVersioning
     def self.included base
       base.extend ClassMethods
       base.class_eval do
-        attr_accessor :_is_temporary
+        define_model_callbacks :revise, only: [:before, :after]
 
         field :_version, type: Integer
         field :_based_on_version, type: Integer
@@ -13,7 +13,6 @@ module MongoidVersioning
           { _orig_id: 1, _version: 1 }, { unique: true }
         )
 
-        before_save :set_version
         after_initialize :revert_id
       end
     end
@@ -28,10 +27,72 @@ module MongoidVersioning
 
     # =====================================================================
 
-    def revise
-      # need to run validations
-      # need to run callbacks
+    def revise options={}
+      if new_record?
+        !_create_revised(options).new_record?
+      else
+        _update_revised(options)
+      end
+    end
 
+    # ---------------------------------------------------------------------
+
+    def versions
+      [latest_version].concat(previous_versions)
+    end
+
+    def latest_version
+      self.class.where(_id: id).first
+    end
+
+    def previous_versions
+      self.class.with(collection: self.class.versions_collection_name).
+        where(_orig_id: id).
+        lt(_version: _version).
+        desc(:_version)
+    end
+
+    def version v
+      return latest_version if v == _version
+      previous_versions.where(_version: v).first
+    end
+
+    private # =============================================================
+
+    def revert_id
+      return unless self['_orig_id']
+      self._id = self['_orig_id']
+    end
+
+    # these mirror the #create and #save methods from Mongoid
+    def _create_revised options={}
+      return self if performing_validations?(options) && invalid?(:create)
+      result = run_callbacks(:revise) do
+        run_callbacks(:save) do
+          run_callbacks(:create) do
+            _revise
+            true
+          end
+        end
+      end
+      post_process_persist(result, options) and self
+    end
+
+    def _update_revised options={}
+      return false if performing_validations?(options) && invalid?(:update)
+      process_flagged_destroys
+      result = run_callbacks(:revise) do
+        run_callbacks(:save) do
+          run_callbacks(:update) do
+            _revise
+            true
+          end
+        end
+      end
+      post_process_persist(result, options) and self
+    end
+
+    def _revise
       previous_version = nil
 
       # 1. get the latest version as stored in the db
@@ -57,39 +118,6 @@ module MongoidVersioning
       # if (result.nModified != 1) {
       #    print("Someone got there first, replay flow to try again");
       # }
-    end
-
-    # ---------------------------------------------------------------------
-      
-    def versions
-      [latest_version].concat(previous_versions)
-    end
-
-    def latest_version
-      self.class.where(_id: id).first
-    end
-
-    def previous_versions
-      self.class.with(collection: self.class.versions_collection_name).
-        where(_orig_id: id).
-        lt(_version: _version).
-        desc(:_version)
-    end
-
-    def version v
-      return latest_version if v == _version
-      previous_versions.where(_version: v).first
-    end
-    
-    private # =============================================================
-    
-    def revert_id
-      return unless self['_orig_id']
-      self._id = self['_orig_id']
-    end
-
-    def set_version
-      self._version ||= 1
     end
   end
 end
