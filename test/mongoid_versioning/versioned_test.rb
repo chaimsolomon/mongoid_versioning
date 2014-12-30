@@ -175,24 +175,65 @@ module MongoidVersioning
           document_with_versions.versions.must_be_kind_of Array
         end
 
+        # ---------------------------------------------------------------------
+
         describe '#previous_versions' do
           it 'returns everything but the latest' do
             document_with_versions.previous_versions.map(&:_version).must_equal [2,1]
           end
           it 'correctly reverts document _ids' do
-            document_with_versions.versions.map(&:id).uniq.must_equal [document_with_versions.id]
+            document_with_versions.previous_versions.map(&:id).uniq.must_equal [document_with_versions.id]
           end
         end
 
-        describe '#previous_versions' do
+        # ---------------------------------------------------------------------
+
+        describe '#latest_version' do
           it 'includes the latest version as in the database' do
-            document_with_versions.versions.map(&:name).wont_include 'Foo'
+            document_with_versions.latest_version.name.wont_equal 'Foo'
           end
         end
+
+        # ---------------------------------------------------------------------
 
         describe '#versions' do
           it 'returns all versions including the latest one' do
             document_with_versions.versions.map(&:_version).must_equal [3,2,1]
+          end
+        end
+
+
+        # ---------------------------------------------------------------------
+
+        describe '#version' do
+          let(:document_with_version) { TestDocument.new }
+
+          before do
+            document_with_version.name = 'v1'
+            document_with_version.revise
+            document_with_version.name = 'v2'
+            document_with_version.revise
+            document_with_version.name = 'v3'
+            document_with_version.revise
+            document_with_version.name = 'Foo'
+          end
+
+          describe 'when latest version' do
+            it 'returns the version from db' do
+              document_with_version.version(3)._version.must_equal 3
+            end
+          end
+
+          describe 'when previous version' do
+            it 'returns the version from db' do
+              document_with_version.version(1)._version.must_equal 1
+            end
+          end
+
+          describe 'when version does not exist' do
+            it 'returns nil' do
+              document_with_version.version(10).must_be_nil
+            end
           end
         end
       end

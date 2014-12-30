@@ -40,6 +40,8 @@ field :_version, type: Integer
 field :_based_on_version, type: Integer
 ```
 
+### Creating versions
+
 To create new version of your document:
 
 ```ruby
@@ -48,6 +50,8 @@ doc.revise # => true
 doc._version # => 1
 doc._based_on_version # => nil
 ```
+
+### Retrieving versions
 
 To access all previous versions:
 
@@ -63,10 +67,16 @@ To access latest version (as stored in the db):
 doc.latest_version # => MyVersionedDocument
 ```
 
-To get all versions of a document:
+To retrieve all versions of a document:
 
 ```ruby
 doc.versions # => Array
+```
+
+To retrieve specific version:
+
+```ruby
+doc.version(2) # => MyVersionedDocument
 ```
 
 ## Further Reading

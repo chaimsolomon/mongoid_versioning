@@ -74,6 +74,11 @@ module MongoidVersioning
         lt(_version: _version).
         desc(:_version)
     end
+
+    def version v
+      return latest_version if v == _version
+      previous_versions.where(_version: v).first
+    end
     
     private # =============================================================
     
