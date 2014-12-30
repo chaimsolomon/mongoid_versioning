@@ -80,6 +80,5 @@ module MongoidVersioning
       return unless self['_orig_id']
       self._id = self['_orig_id']
     end
-
   end
 end
