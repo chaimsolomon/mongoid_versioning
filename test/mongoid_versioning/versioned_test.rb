@@ -14,11 +14,6 @@ module MongoidVersioning
 
     # =====================================================================
 
-    describe 'accessors' do
-    end
-
-    # =====================================================================
-
     describe 'fields' do
       it 'has :_version' do
         subject.must_respond_to :_version
