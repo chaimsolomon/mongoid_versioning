@@ -60,16 +60,18 @@ module MongoidVersioning
     # ---------------------------------------------------------------------
       
     def versions
-      latest_version_criteria = self.class.
-        where(_id: id)
+      latest_version.concat(previous_versions)
+    end
 
-      prev_versions_criteria = self.class.criteria.
-        with(collection: self.class.versions_collection_name).
+    def latest_version
+      self.class.where(_id: id)
+    end
+
+    def previous_versions
+      self.class.with(collection: self.class.versions_collection_name).
         where(_orig_id: id).
-        ne(_version: _version).
+        lt(_version: _version).
         desc(:_version)
-
-      latest_version_criteria.concat(prev_versions_criteria)
     end
     
     private # =============================================================
