@@ -196,26 +196,6 @@ module MongoidVersioning
           end
         end
       end
-
-
-      # =====================================================================
-
-      # describe '#version_at' do
-      #   # let(:reverted_document) { TestDocument.new }
-
-      #   # describe 'when version does not exist' do
-      #   #   it 'returns nil' do
-      #   #     reverted_document.revert_to(3).must_be_nil
-      #   #   end
-      #   # end
-      # end
-
-      # describe '#revert_to!' do
-      #   describe 'when version does not exist' do
-      #     it 'raises VersionNotFound error'
-      #   end
-      # end
-
     end
 
   end
