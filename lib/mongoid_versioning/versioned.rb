@@ -69,7 +69,7 @@ module MongoidVersioning
     def previous_versions
       self.class.with(collection: self.class.versions_collection_name).
         where(_orig_id: id).
-        lt(_version: _version).
+        ne(_version: latest_version._version).
         desc(:_version)
     end
 

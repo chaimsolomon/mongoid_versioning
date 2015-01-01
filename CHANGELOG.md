@@ -1,3 +1,7 @@
+## 0.0.3
+
+* The `#previous_versions` now use an extra query to be more exact.
+
 ## 0.0.2
 
 * Calling `#revise` on new document simply creates it (`:revise` callbacks are not triggered).
