@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/tomasc/mongoid_versioning.svg)](https://travis-ci.org/tomasc/mongoid_versioning) [![Gem Version](https://badge.fury.io/rb/mongoid_versioning.svg)](http://badge.fury.io/rb/mongoid_versioning) [![Coverage Status](https://img.shields.io/coveralls/tomasc/mongoid_versioning.svg)](https://coveralls.io/r/tomasc/mongoid_versioning)
 
+Versioning of Mongoid documents. Past versions are stored in a separate collection.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -51,7 +53,7 @@ doc._version # => 1
 doc._based_on_version # => nil
 ```
 
-The `#revise` method validates the document and runs `:revise`, `:save` and `:update` callbacks (resp. `:revise`, `:save` and `:create` for new record).
+The `#revise` method validates the document and runs `:revise`, `:save` and `:update` callbacks. (Please note that running `#revise` on new document will resort to standard `#save`.)
 
 ### Retrieving versions
 

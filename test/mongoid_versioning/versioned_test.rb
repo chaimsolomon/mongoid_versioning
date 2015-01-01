@@ -208,39 +208,6 @@ module MongoidVersioning
 
         # ---------------------------------------------------------------------
 
-        # describe 'subsequent revision' do
-        #   before do
-        #     subject.name = 'v1'
-        #     subject.revise
-        #     subject.name = 'v2'
-        #     subject.revise
-        #     subject.name = 'v3'
-        #     subject.revise
-
-        #     @current_docs = TestDocument.collection.where(_id: subject.id)
-        #     @version_docs = TestDocument.collection.database[TestDocument.versions_collection_name].where(_orig_id: subject.id)
-        #   end
-
-        #   describe 'default collection' do
-        #     it 'updates the current document in the db' do
-        #       @current_docs.first['name'].must_equal 'v3'
-        #       @current_docs.first['_version'].must_equal 3
-        #       @current_docs.first['_based_on_version'].must_equal 2
-        #       @current_docs.count.must_equal 1
-        #     end
-        #   end
-
-        #   describe 'versions' do
-        #     it 'has 2 previous versions' do
-        #       @version_docs.count.must_equal 2
-        #       @version_docs.collect{ |i| i['_version'] }.must_equal [1,2]
-        #       @version_docs.collect{ |i| i['_based_on_version'] }.must_equal [nil,1]
-        #     end
-        #   end
-        # end
-
-        # ---------------------------------------------------------------------
-
         # describe 'revise on previous version' do
         #   before do
         #     subject.name = 'v1'
@@ -268,77 +235,76 @@ module MongoidVersioning
 
       # =====================================================================
 
-      # describe 'versions' do
-      #   before do
-      #     subject.name = 'v1'
-      #     subject.revise
-      #     subject.name = 'v2'
-      #     subject.revise
-      #     subject.name = 'v3'
-      #     subject.revise
-      #     subject.name = 'Foo'
-      #   end
+      describe 'versions' do
+        before do
+          subject.name = 'v1'
+          subject.revise
+          subject.name = 'v2'
+          subject.revise
+          subject.name = 'v3'
+          subject.revise
+          subject.name = 'Foo'
+        end
 
-      #   # it 'returns an Array' do
-      #   #   subject.versions.must_be_kind_of Array
-      #   # end
+        # ---------------------------------------------------------------------
 
-      #   # ---------------------------------------------------------------------
+        describe '#previous_versions' do
+          it 'returns everything but the latest' do
+            subject.previous_versions.map(&:_version).must_equal [2,1]
+          end
+          it 'reverts document _ids' do
+            subject.previous_versions.map(&:id).uniq.must_equal [subject.id]
+          end
+        end
 
-      #   describe '#previous_versions' do
-      #     # it 'returns everything but the latest' do
-      #     #   subject.previous_versions.map(&:_version).must_equal [2,1]
-      #     # end
-      #     # it 'reverts document _ids' do
-      #     #   subject.previous_versions.map(&:id).uniq.must_equal [subject.id]
-      #     # end
-      #   end
+        describe '#latest_version' do
+          it 'includes the latest version as in the database' do
+            subject.latest_version.name.wont_equal 'Foo'
+          end
+        end
 
-      #   describe '#latest_version' do
-      #     # it 'includes the latest version as in the database' do
-      #     #   subject.latest_version.name.wont_equal 'Foo'
-      #     # end
-      #   end
-
-      #   describe '#versions' do
-      #     # it 'returns all versions including the latest one' do
-      #     #   subject.versions.map(&:_version).must_equal [3,2,1]
-      #     # end
-      #   end
+        describe '#versions' do
+          it 'returns an Array' do
+            subject.versions.must_be_kind_of Array
+          end
+          it 'returns all versions including the latest one' do
+            subject.versions.map(&:_version).must_equal [3,2,1]
+          end
+        end
+      end
 
 
-      #   # ---------------------------------------------------------------------
+      # ---------------------------------------------------------------------
 
-      #   describe '#version' do
-      #     # before do
-      #     #   subject.name = 'v1'
-      #     #   subject.revise
-      #     #   subject.name = 'v2'
-      #     #   subject.revise
-      #     #   subject.name = 'v3'
-      #     #   subject.revise
-      #     #   subject.name = 'Foo'
-      #     # end
+      describe '#version' do
+        before do
+          subject.name = 'v1'
+          subject.revise
+          subject.name = 'v2'
+          subject.revise
+          subject.name = 'v3'
+          subject.revise
+          subject.name = 'Foo'
+        end
 
-      #     # describe 'when latest version' do
-      #     #   it 'returns the version from db' do
-      #     #     subject.version(3)._version.must_equal 3
-      #     #   end
-      #     # end
+        describe 'when latest version' do
+          it 'returns the version from db' do
+            subject.version(3)._version.must_equal 3
+          end
+        end
 
-      #     # describe 'when previous version' do
-      #     #   it 'returns the version from db' do
-      #     #     subject.version(1)._version.must_equal 1
-      #     #   end
-      #     # end
+        describe 'when previous version' do
+          it 'returns the version from db' do
+            subject.version(1)._version.must_equal 1
+          end
+        end
 
-      #     # describe 'when version does not exist' do
-      #     #   it 'returns nil' do
-      #     #     subject.version(10).must_be_nil
-      #     #   end
-      #     # end
-      #   end
-      # end
+        describe 'when version does not exist' do
+          it 'returns nil' do
+            subject.version(10).must_be_nil
+          end
+        end
+      end
 
     end
 

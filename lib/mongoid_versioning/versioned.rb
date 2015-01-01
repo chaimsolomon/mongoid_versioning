@@ -9,12 +9,12 @@ module MongoidVersioning
         field :_version, type: Integer
         field :_based_on_version, type: Integer
 
-        collection.database[versions_collection_name].indexes.create(
+        versions_collection.indexes.create(
           { _orig_id: 1, _version: 1 }, { unique: true }
         )
 
         before_create :set_initial_version
-        # after_initialize :revert_id
+        after_initialize :revert_id
       end
     end
 
@@ -50,25 +50,25 @@ module MongoidVersioning
 
     # ---------------------------------------------------------------------
 
-    # def versions
-    #   # [latest_version].concat(previous_versions)
-    # end
+    def versions
+      [latest_version].concat(previous_versions)
+    end
 
-    # def latest_version
-    #   # self.class.where(_id: id).first
-    # end
+    def latest_version
+      self.class.where(_id: id).first
+    end
 
-    # def previous_versions
-    #   # self.class.with(collection: self.class.versions_collection_name).
-    #   #   where(_orig_id: id).
-    #   #   lt(_version: _version).
-    #   #   desc(:_version)
-    # end
+    def previous_versions
+      self.class.with(collection: self.class.versions_collection_name).
+        where(_orig_id: id).
+        lt(_version: _version).
+        desc(:_version)
+    end
 
-    # def version v
-    #   # return latest_version if v == _version
-    #   # previous_versions.where(_version: v).first
-    # end
+    def version v
+      return latest_version if v == _version
+      previous_versions.where(_version: v).first
+    end
 
     private # =============================================================
 
@@ -76,13 +76,13 @@ module MongoidVersioning
       self._version ||= 1
     end
 
-    # def revert_id
-    #   # return unless self['_orig_id']
-    #   # self._id = self['_orig_id']
-    # end
+    def revert_id
+      return unless self['_orig_id']
+      self._id = self['_orig_id']
+    end
 
     def _revise
-      previous_doc = self.class.where(_id: id).first
+      previous_doc = latest_version
 
       previous_doc['_orig_id'] = previous_doc['_id']
       previous_doc['_id'] = BSON::ObjectId.new
