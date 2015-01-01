@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/tomasc/mongoid_versioning.svg)](https://travis-ci.org/tomasc/mongoid_versioning) [![Gem Version](https://badge.fury.io/rb/mongoid_versioning.svg)](http://badge.fury.io/rb/mongoid_versioning) [![Coverage Status](https://img.shields.io/coveralls/tomasc/mongoid_versioning.svg)](https://coveralls.io/r/tomasc/mongoid_versioning)
 
-Versioning of Mongoid documents. Past versions are stored in a separate collection.
+Versioning of Mongoid documents. Past versions are stored in separate collection.
 
 This gem is intended for versioning of whole documents. However, it might be possible to extend its support to embedded documents as well. Pull requests are welcome.
 
