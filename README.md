@@ -87,11 +87,6 @@ To retrieve specific version:
 doc.version(2) # => MyVersionedDocument
 ```
 
-## Todo
-
-* add check (loop) that prevents errors in case of concurrent updates
-* test and make it work for embedded documents
-
 ## Further Reading
 
 See [Further Thoughts on How to Track Versions with MongoDB](http://askasya.com/post/revisitversions).
