@@ -57,7 +57,7 @@ doc._based_on_version # => nil
 
 The `#revise` method validates the document and runs `:revise`, `:save` and `:update` callbacks. (Please note that running `#revise` on new document will resort to standard `#save`.)
 
-A `#revise!` method, that raises exceptions, is also available.
+A `#revise!` method, raising `Mongoid::Errors::Validations` and `Mongoid::Errors::Callbacks` exceptions, is also available.
 
 ### Retrieving versions
 
