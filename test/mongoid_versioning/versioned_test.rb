@@ -204,6 +204,48 @@ module MongoidVersioning
         # ---------------------------------------------------------------------
 
         describe 'on concurrent updates' do
+          before do
+            @doc = TestDocument.create(name: 'Doc')
+
+            @user1 = TestDocument.where(_id: @doc.id).first
+            @user2 = TestDocument.where(_id: @doc.id).first
+
+            @user2.name = 'Doc2'
+            @user1.name = 'Doc1'
+
+            @user2.revise
+            @user1.revise
+
+            @result = TestDocument.where(_id: @doc.id).first
+            @versions = TestDocument.versions_collection.where(_orig_id: @doc.id).sort(_version: -1)
+            @current = TestDocument.collection.where(_id: @doc.id).first
+          end
+
+          it 'will correctly set values' do
+            @result._version.must_equal 3
+            @result._based_on_version.must_equal 1
+            @result.name.must_equal 'Doc1'
+          end
+
+          describe 'versions' do
+            it 'stores previous doc' do
+              @versions.count.must_equal 2
+              @versions.map{ |v| v['_version'] }.must_equal [2, 1]
+              @versions.map{ |v| v['_based_on_version'] }.must_equal [1, nil]
+              @versions.map{ |v| v['name'] }.must_equal ['Doc2', 'Doc']
+              @versions.first["_version"].must_equal 2
+              @versions.first["_based_on_version"].must_equal 1
+              @versions.first["name"].must_equal 'Doc2'
+            end
+          end
+
+          describe 'current' do
+            it 'stores updated doc into current collection' do
+              @current["_version"].must_equal 3
+              @current["_based_on_version"].must_equal 1
+              @current["name"].must_equal 'Doc1'
+            end
+          end
         end
 
         # ---------------------------------------------------------------------
@@ -229,6 +271,24 @@ module MongoidVersioning
           end
           it 'updates :_based_on_version' do
             @new_version._based_on_version.must_equal 1
+          end
+        end
+      end
+
+      # =====================================================================
+      
+      describe '#revise!' do
+        let(:doc) { TestDocument.create(name: 'revise!') }
+
+        it 'raises error when invalid' do
+          doc.name = nil
+          proc { doc.revise! }.must_raise Mongoid::Errors::Validations
+        end
+
+        it 'raises error when the :revise callbacks returns false' do
+          skip 'not sure how to test this'
+          TestDocument.stub(:before_revise, false) do
+            proc { doc.revise! }.must_raise Mongoid::Errors::Callback
           end
         end
       end

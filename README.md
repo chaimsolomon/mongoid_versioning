@@ -4,6 +4,8 @@
 
 Versioning of Mongoid documents. Past versions are stored in a separate collection.
 
+This gem is intended for versioning of whole documents. However, it might be possible to extend its support to embedded documents as well. Pull requests are welcome.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -54,6 +56,8 @@ doc._based_on_version # => nil
 ```
 
 The `#revise` method validates the document and runs `:revise`, `:save` and `:update` callbacks. (Please note that running `#revise` on new document will resort to standard `#save`.)
+
+A `#revise!` method, that raises exceptions, is also available.
 
 ### Retrieving versions
 

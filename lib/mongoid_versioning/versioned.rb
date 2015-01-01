@@ -48,6 +48,14 @@ module MongoidVersioning
       post_process_persist(result, options) and self
     end
 
+    def revise! options={}
+      unless revise(options)
+        fail_due_to_validation! unless errors.empty?
+        fail_due_to_callback!(:revise!)
+      end
+      true
+    end
+
     # ---------------------------------------------------------------------
 
     def versions
@@ -82,19 +90,24 @@ module MongoidVersioning
     end
 
     def _revise
-      previous_doc = latest_version
+      loop do
+        previous_doc = latest_version
 
-      previous_doc['_orig_id'] = previous_doc['_id']
-      previous_doc['_id'] = BSON::ObjectId.new
+        previous_doc['_orig_id'] = previous_doc['_id']
+        previous_doc['_id'] = BSON::ObjectId.new
 
-      current_version = previous_doc._version
+        current_version = previous_doc._version
 
-      self.class.versions_collection.where(_orig_id: previous_doc['_orig_id'], _version: previous_doc._version).upsert(previous_doc.as_document)
+        res1 = self.class.versions_collection.where(_orig_id: previous_doc['_orig_id'], _version: previous_doc._version).upsert(previous_doc.as_document)
 
-      self._based_on_version = _version || current_version
-      self._version = current_version+1
+        self._based_on_version = _version || current_version
+        self._version = current_version+1
 
-      self.class.collection.where(_id: id, _version: current_version).update(self.as_document)
+        res2 = self.class.collection.where(_id: id, _version: current_version).update(self.as_document)
+
+        # replay flow if someone else updated the document before us
+        break unless res2['n'] != 1
+      end
     end
 
   end
