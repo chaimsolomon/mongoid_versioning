@@ -13,7 +13,8 @@ module MongoidVersioning
           { _orig_id: 1, _version: 1 }, { unique: true }
         )
 
-        after_initialize :revert_id
+        before_create :set_initial_version
+        # after_initialize :revert_id
       end
     end
 
@@ -23,62 +24,17 @@ module MongoidVersioning
       def versions_collection_name
         [collection.name, 'versions'].join('.')
       end
+
+      def versions_collection
+        collection.database[versions_collection_name]
+      end
     end
 
     # =====================================================================
 
     def revise options={}
-      if new_record?
-        !_create_revised(options).new_record?
-      else
-        _update_revised(options)
-      end
-    end
+      return save if new_record?
 
-    # ---------------------------------------------------------------------
-
-    def versions
-      [latest_version].concat(previous_versions)
-    end
-
-    def latest_version
-      self.class.where(_id: id).first
-    end
-
-    def previous_versions
-      self.class.with(collection: self.class.versions_collection_name).
-        where(_orig_id: id).
-        lt(_version: _version).
-        desc(:_version)
-    end
-
-    def version v
-      return latest_version if v == _version
-      previous_versions.where(_version: v).first
-    end
-
-    private # =============================================================
-
-    def revert_id
-      return unless self['_orig_id']
-      self._id = self['_orig_id']
-    end
-
-    # these mirror the #create and #save methods from Mongoid
-    def _create_revised options={}
-      return self if performing_validations?(options) && invalid?(:create)
-      result = run_callbacks(:revise) do
-        run_callbacks(:save) do
-          run_callbacks(:create) do
-            _revise
-            true
-          end
-        end
-      end
-      post_process_persist(result, options) and self
-    end
-
-    def _update_revised options={}
       return false if performing_validations?(options) && invalid?(:update)
       process_flagged_destroys
       result = run_callbacks(:revise) do
@@ -92,32 +48,54 @@ module MongoidVersioning
       post_process_persist(result, options) and self
     end
 
-    def _revise
-      previous_version = nil
+    # ---------------------------------------------------------------------
 
-      # 1. get the latest version as stored in the db
-      if previous_doc = self.class.collection.find({ _id: id }).first
+    # def versions
+    #   # [latest_version].concat(previous_versions)
+    # end
 
-        previous_version = previous_doc["_version"] || 1
+    # def latest_version
+    #   # self.class.where(_id: id).first
+    # end
 
-        previous_doc['_orig_id'] = previous_doc['_id']
-        previous_doc['_id'] = BSON::ObjectId.new
-        previous_doc['_version'] = previous_version
+    # def previous_versions
+    #   # self.class.with(collection: self.class.versions_collection_name).
+    #   #   where(_orig_id: id).
+    #   #   lt(_version: _version).
+    #   #   desc(:_version)
+    # end
 
-        # 2. upsert the latest version into the .versions collection
-        self.class.collection.database[self.class.versions_collection_name].where(_orig_id: id, _version: previous_version).upsert(previous_doc)
-      end
+    # def version v
+    #   # return latest_version if v == _version
+    #   # previous_versions.where(_version: v).first
+    # end
 
-      # 3. insert new version
-      self._based_on_version = _version || previous_version
-      self._version = previous_version.to_i+1
+    private # =============================================================
 
-      self.class.collection.where(_id: id).upsert(self.as_document)
-
-      # TODO
-      # if (result.nModified != 1) {
-      #    print("Someone got there first, replay flow to try again");
-      # }
+    def set_initial_version
+      self._version ||= 1
     end
+
+    # def revert_id
+    #   # return unless self['_orig_id']
+    #   # self._id = self['_orig_id']
+    # end
+
+    def _revise
+      previous_doc = self.class.where(_id: id).first
+
+      previous_doc['_orig_id'] = previous_doc['_id']
+      previous_doc['_id'] = BSON::ObjectId.new
+
+      current_version = previous_doc._version
+
+      self.class.versions_collection.where(_orig_id: previous_doc['_orig_id'], _version: previous_doc._version).upsert(previous_doc.as_document)
+
+      self._version = current_version+1
+      self._based_on_version = current_version
+
+      self.class.collection.where(_id: id, _version: current_version).update(self.as_document)
+    end
+
   end
 end
