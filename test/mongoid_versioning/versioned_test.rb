@@ -208,29 +208,29 @@ module MongoidVersioning
 
         # ---------------------------------------------------------------------
 
-        # describe 'revise on previous version' do
-        #   before do
-        #     subject.name = 'v1'
-        #     subject.revise
-        #     subject.name = 'v2'
-        #     subject.revise
-        #     subject.name = 'v3'
-        #     subject.revise
+        describe 'revise on previous version' do
+          before do
+            subject.name = 'v1'
+            subject.revise
+            subject.name = 'v2'
+            subject.revise
+            subject.name = 'v3'
+            subject.revise
 
-        #     @new_version = subject.version(1)
-        #     @new_version.revise
-        #   end
+            @new_version = subject.version(1)
+            @new_version.revise
+          end
 
-        #   it 'saves reverted attribute' do
-        #     @new_version.name.must_equal 'v1'
-        #   end
-        #   it 'updates :_version' do
-        #     @new_version._version.must_equal 4
-        #   end
-        #   it 'updates :_based_on_version' do
-        #     @new_version._based_on_version.must_equal 1
-        #   end
-        # end
+          it 'saves reverted attribute' do
+            @new_version.name.must_equal 'v1'
+          end
+          it 'updates :_version' do
+            @new_version._version.must_equal 4
+          end
+          it 'updates :_based_on_version' do
+            @new_version._based_on_version.must_equal 1
+          end
+        end
       end
 
       # =====================================================================

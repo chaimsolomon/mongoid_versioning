@@ -91,8 +91,8 @@ module MongoidVersioning
 
       self.class.versions_collection.where(_orig_id: previous_doc['_orig_id'], _version: previous_doc._version).upsert(previous_doc.as_document)
 
+      self._based_on_version = _version || current_version
       self._version = current_version+1
-      self._based_on_version = current_version
 
       self.class.collection.where(_id: id, _version: current_version).update(self.as_document)
     end
