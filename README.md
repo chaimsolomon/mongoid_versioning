@@ -89,7 +89,7 @@ doc.version(2) # => MyVersionedDocument
 
 ### Removing versions
 
-By default, past versions are never removed. This way it is possible to implement some sort of recovery mechanism of deleted document.
+By default, past versions are never removed. This way it is possible to implement some sort of recovery mechanism of deleted documents.
 
 It should be however trivial to implement removal of versions on destroy. For example:
 
