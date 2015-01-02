@@ -87,6 +87,16 @@ To retrieve specific version:
 doc.version(2) # => MyVersionedDocument
 ```
 
+### Removing versions
+
+By default, past versions are never removed. This way it is possible to implement some sort of recovery mechanism of deleted document.
+
+It should be however trivial to implement removal of versions on destroy. For example:
+
+```ruby
+after_destroy -> doc { doc.previous_versions.destroy_all }
+```
+
 ## Further Reading
 
 See [Further Thoughts on How to Track Versions with MongoDB](http://askasya.com/post/revisitversions).
