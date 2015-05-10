@@ -1,6 +1,17 @@
 module MongoidVersioning
   module Versioned
 
+    module Revert
+      def restore
+        cls = self.class.to_s.split('::').first # Turns User::Version into User.
+        document = self.class.const_get(cls).find(self.original_id)
+        document.assign_attributes( attributes.except("_id", "original_id") )
+        document
+      end
+    end
+
+    # ---------------------------------------------------------------------
+    
     def self.included base
       base.extend ClassMethods
       base.class_eval do
@@ -9,24 +20,18 @@ module MongoidVersioning
         field :_version, type: Integer
         field :_based_on_version, type: Integer
 
-        versions_collection.indexes.create(
-          { _orig_id: 1, _version: 1 }, { unique: true }
-        )
+        self.const_set("Version", Class.new)
+        self.const_get("Version").class_eval do
+          include Mongoid::Document
+          include Mongoid::Attributes::Dynamic
+          include MongoidVersioning::Versioned::Revert
+          field :original_id, type: String
+          field :_version, type: Integer
+          field :_based_on_version, type: Integer
+        end
 
         before_create :set_initial_version
         after_initialize :revert_id
-      end
-    end
-
-    # =====================================================================
-
-    module ClassMethods
-      def versions_collection_name
-        [collection.name, 'versions'].join('.')
-      end
-
-      def versions_collection
-        collection.database[versions_collection_name]
       end
     end
 
@@ -67,8 +72,9 @@ module MongoidVersioning
     end
 
     def previous_versions
-      self.class.with(collection: self.class.versions_collection_name).
-        where(_orig_id: id).
+      # self.class.with(collection: self.class.versions_collection_name).
+      self.class.const_get("Version").
+        where(original_id: id).
         ne(_version: latest_version._version).
         desc(:_version)
     end
@@ -85,20 +91,29 @@ module MongoidVersioning
     end
 
     def revert_id
-      return unless self['_orig_id']
-      self._id = self['_orig_id']
+      return unless self['original_id']
+      self._id = self['original_id']
     end
 
     def _revise
       loop do
         previous_doc = latest_version
 
-        previous_doc['_orig_id'] = previous_doc['_id']
-        previous_doc['_id'] = BSON::ObjectId.new
+        # previous_doc['original_id'] = previous_doc.id
+        # previous_doc.id = BSON::ObjectId.new
 
         current_version = previous_doc._version
 
-        res1 = self.class.versions_collection.where(_orig_id: previous_doc['_orig_id'], _version: previous_doc._version).upsert(previous_doc.as_document)
+        self.class.const_get("Version").create(previous_doc.attributes.except('_id')) do |doc|
+          doc.original_id = previous_doc.id
+          doc._version = previous_doc._version
+        end
+
+        # res1 = self.class.const_get("Version").collection.
+        #   where(original_id: previous_doc['original_id'], _version: previous_doc._version).
+        #   upsert(previous_doc.as_document)
+
+        # res1 = self.class.versions_collection.where(original_id: previous_doc['original_id'], _version: previous_doc._version).upsert(previous_doc.as_document)
 
         self._based_on_version = _version || current_version
         self._version = current_version+1
