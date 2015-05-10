@@ -1,14 +1,14 @@
 module MongoidVersioning
   module Versioned
 
-    module Revert
-      def restore
-        cls = self.class.to_s.split('::').first # Turns User::Version into User.
-        document = self.class.const_get(cls).find(self.original_id)
-        document.assign_attributes( attributes.except("_id", "original_id") )
-        document
-      end
-    end
+    # module Revert
+    #   def restore
+    #     cls = self.class.to_s.split('::').first # Turns User::Version into User.
+    #     document = self.class.const_get(cls).find(self.original_id)
+    #     document.assign_attributes( attributes.except("_id", "original_id") )
+    #     document
+    #   end
+    # end
 
     # ---------------------------------------------------------------------
     
@@ -24,8 +24,8 @@ module MongoidVersioning
         self.const_get("Version").class_eval do
           include Mongoid::Document
           include Mongoid::Attributes::Dynamic
-          include MongoidVersioning::Versioned::Revert
-          field :original_id, type: String
+          # include MongoidVersioning::Versioned::Revert
+          field :original_id, type: BSON::ObjectId
           field :_version, type: Integer
           field :_based_on_version, type: Integer
         end
@@ -99,21 +99,12 @@ module MongoidVersioning
       loop do
         previous_doc = latest_version
 
-        # previous_doc['original_id'] = previous_doc.id
-        # previous_doc.id = BSON::ObjectId.new
-
         current_version = previous_doc._version
 
         self.class.const_get("Version").create(previous_doc.attributes.except('_id')) do |doc|
           doc.original_id = previous_doc.id
           doc._version = previous_doc._version
         end
-
-        # res1 = self.class.const_get("Version").collection.
-        #   where(original_id: previous_doc['original_id'], _version: previous_doc._version).
-        #   upsert(previous_doc.as_document)
-
-        # res1 = self.class.versions_collection.where(original_id: previous_doc['original_id'], _version: previous_doc._version).upsert(previous_doc.as_document)
 
         self._based_on_version = _version || current_version
         self._version = current_version+1

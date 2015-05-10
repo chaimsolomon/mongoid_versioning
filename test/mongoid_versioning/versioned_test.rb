@@ -269,21 +269,21 @@ module MongoidVersioning
 
       # =====================================================================
       
-      # describe '#revise!' do
-      #   let(:doc) { TestDocument.create(name: 'revise!') }
+      describe '#revise!' do
+        let(:doc) { TestDocument.create(name: 'revise!') }
 
-      #   it 'raises error when invalid' do
-      #     doc.name = nil
-      #     proc { doc.revise! }.must_raise Mongoid::Errors::Validations
-      #   end
+        it 'raises error when invalid' do
+          doc.name = nil
+          proc { doc.revise! }.must_raise Mongoid::Errors::Validations
+        end
 
-      #   it 'raises error when the :revise callbacks returns false' do
-      #     skip 'not sure how to test this'
-      #     TestDocument.stub(:before_revise, false) do
-      #       proc { doc.revise! }.must_raise Mongoid::Errors::Callback
-      #     end
-      #   end
-      # end
+        it 'raises error when the :revise callbacks returns false' do
+          skip 'not sure how to test this'
+          TestDocument.stub(:before_revise, false) do
+            proc { doc.revise! }.must_raise Mongoid::Errors::Callback
+          end
+        end
+      end
 
       # =====================================================================
 
@@ -309,54 +309,53 @@ module MongoidVersioning
           end
         end
 
-        # describe '#latest_version' do
-        #   it 'includes the latest version as in the database' do
-        #     subject.latest_version.name.wont_equal 'Foo'
-        #   end
-        # end
+        describe '#latest_version' do
+          it 'includes the latest version as in the database' do
+            subject.latest_version.name.wont_equal 'Foo'
+          end
+        end
 
-        # describe '#versions' do
-        #   it 'returns an Array' do
-        #     subject.versions.must_be_kind_of Array
-        #   end
-        #   it 'returns all versions including the latest one' do
-        #     subject.versions.map(&:_version).must_equal [3,2,1]
-        #   end
-        # end
+        describe '#versions' do
+          it 'returns an Array' do
+            subject.versions.must_be_kind_of Array
+          end
+          it 'returns all versions including the latest one' do
+            subject.versions.map(&:_version).must_equal [3,2,1]
+          end
+        end
       end
-
 
       # ---------------------------------------------------------------------
 
-      # describe '#version' do
-      #   before do
-      #     subject.name = 'v1'
-      #     subject.revise
-      #     subject.name = 'v2'
-      #     subject.revise
-      #     subject.name = 'v3'
-      #     subject.revise
-      #     subject.name = 'Foo'
-      #   end
+      describe '#version' do
+        before do
+          subject.name = 'v1'
+          subject.revise
+          subject.name = 'v2'
+          subject.revise
+          subject.name = 'v3'
+          subject.revise
+          subject.name = 'Foo'
+        end
 
-      #   describe 'when latest version' do
-      #     it 'returns the version from db' do
-      #       subject.version(3)._version.must_equal 3
-      #     end
-      #   end
+        describe 'when latest version' do
+          it 'returns the version from db' do
+            subject.version(3)._version.must_equal 3
+          end
+        end
 
-      #   describe 'when previous version' do
-      #     it 'returns the version from db' do
-      #       subject.version(1)._version.must_equal 1
-      #     end
-      #   end
+        describe 'when previous version' do
+          it 'returns the version from db' do
+            subject.version(1)._version.must_equal 1
+          end
+        end
 
-      #   describe 'when version does not exist' do
-      #     it 'returns nil' do
-      #       subject.version(10).must_be_nil
-      #     end
-      #   end
-      # end
+        describe 'when version does not exist' do
+          it 'returns nil' do
+            subject.version(10).must_be_nil
+          end
+        end
+      end
 
     end
 
