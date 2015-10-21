@@ -18,9 +18,10 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "mongoid", "~> 4.0"
+  spec.add_dependency "mongoid", "~> 5.0.0"
 
   spec.add_development_dependency "bundler", "~> 1.3"
+  spec.add_development_dependency "rspec-core"
   spec.add_development_dependency "coveralls"
   spec.add_development_dependency "database_cleaner"
   spec.add_development_dependency "guard"

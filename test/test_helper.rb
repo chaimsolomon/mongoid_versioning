@@ -25,7 +25,7 @@ def database_id
 end
 
 CONFIG = {
-  sessions: {
+  clients: {
     default: {
       database: database_id,
       hosts: [ "#{HOST}:#{PORT}" ]
@@ -40,6 +40,6 @@ end
 DatabaseCleaner.orm = :mongoid
 DatabaseCleaner.strategy = :truncation
 
-class MiniTest::Spec
-  before(:each) { DatabaseCleaner.clean }
-end
+# class MiniTest::Spec
+#   before(:each) { DatabaseCleaner.clean }
+# end
