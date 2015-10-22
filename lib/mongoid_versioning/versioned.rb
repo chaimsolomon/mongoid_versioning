@@ -13,6 +13,8 @@ module MongoidVersioning
           { _orig_id: 1, _version: 1 }, { unique: true }
         )
 
+        class_attribute :version_max
+
         before_create :set_initial_version
         after_initialize :revert_id
       end
@@ -27,6 +29,10 @@ module MongoidVersioning
 
       def versions_collection
         collection.database[versions_collection_name]
+      end
+
+      def max_versions(number)
+        self.version_max = number.to_i
       end
     end
 
@@ -107,8 +113,14 @@ module MongoidVersioning
 
         res2 = self.class.collection.find(_id: id, _version: current_version).update_one(self.as_document)
 
+
+
         # replay flow if someone else updated the document before us
         break unless res2.n != 1
+      end
+
+      if version_max.present? && versions.length > version_max
+        self.class.versions_collection.find(_orig_id: self.id, _version: versions.min_by(&:_version)._version).delete_many
       end
     end
 

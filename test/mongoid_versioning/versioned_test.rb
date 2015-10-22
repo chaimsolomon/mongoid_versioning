@@ -1,4 +1,4 @@
-require 'test_helper'
+require '../test_helper'
 
 class TestDocument
   include Mongoid::Document
@@ -7,6 +7,8 @@ class TestDocument
   attr_accessor :callbacks
 
   field :name, type: String
+
+  max_versions 5
 
   validates :name, presence: true
 
@@ -79,6 +81,20 @@ module MongoidVersioning
           end
           it 'sets _based_on_version' do
             new_document._based_on_version.must_be_nil
+          end
+
+          it 'version_max' do
+            new_document.revise
+            new_document.versions.count.must_equal 2
+            new_document.revise
+            new_document.versions.count.must_equal 3
+            new_document.revise
+            new_document.versions.count.must_equal 4
+            new_document.revise
+            new_document.versions.count.must_equal 5
+            new_document.revise
+            new_document.versions.count.must_equal 5
+
           end
 
           describe 'when invalid' do
