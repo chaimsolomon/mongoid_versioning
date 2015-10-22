@@ -70,8 +70,8 @@ module MongoidVersioning
             new_document.name = 'Foo'
             new_document.revise
 
-            @versions = TestDocument.versions_collection.where(_orig_id: new_document.id).sort(_version: -1)
-            @current = TestDocument.collection.where(_id: new_document.id).first
+            @versions = TestDocument.versions_collection.find(_orig_id: new_document.id).sort(_version: -1)
+            @current = TestDocument.collection.find(_id: new_document.id).first
           end
 
           it 'sets _version' do
@@ -121,8 +121,8 @@ module MongoidVersioning
             existing_document.name = 'Foo'
             existing_document.revise
 
-            @versions = TestDocument.versions_collection.where(_orig_id: existing_document.id).sort(_version: -1)
-            @current = TestDocument.collection.where(_id: existing_document.id).first
+            @versions = TestDocument.versions_collection.find(_orig_id: existing_document.id).sort(_version: -1)
+            @current = TestDocument.collection.find(_id: existing_document.id).first
           end
 
           it 'sets _version' do
@@ -169,8 +169,8 @@ module MongoidVersioning
               existing_document.name = 'Bar'
               existing_document.revise
 
-              @versions = TestDocument.versions_collection.where(_orig_id: existing_document.id).sort(_version: -1)
-              @current = TestDocument.collection.where(_id: existing_document.id).first
+              @versions = TestDocument.versions_collection.find(_orig_id: existing_document.id).sort(_version: -1)
+              @current = TestDocument.collection.find(_id: existing_document.id).first
             end
 
             it 'sets _version' do
@@ -217,8 +217,8 @@ module MongoidVersioning
             @user1.revise
 
             @result = TestDocument.where(_id: @doc.id).first
-            @versions = TestDocument.versions_collection.where(_orig_id: @doc.id).sort(_version: -1)
-            @current = TestDocument.collection.where(_id: @doc.id).first
+            @versions = TestDocument.versions_collection.find(_orig_id: @doc.id).sort(_version: -1)
+            @current = TestDocument.collection.find(_id: @doc.id).first
           end
 
           it 'will correctly set values' do

@@ -9,7 +9,7 @@ module MongoidVersioning
         field :_version, type: Integer
         field :_based_on_version, type: Integer
 
-        versions_collection.indexes.create(
+        versions_collection.indexes.create_one(
           { _orig_id: 1, _version: 1 }, { unique: true }
         )
 
@@ -81,7 +81,7 @@ module MongoidVersioning
     private # =============================================================
 
     def set_initial_version
-      self._version ||= 1
+      self[:_version] ||= 1
     end
 
     def revert_id
@@ -98,15 +98,17 @@ module MongoidVersioning
 
         current_version = previous_doc._version
 
-        res1 = self.class.versions_collection.where(_orig_id: previous_doc['_orig_id'], _version: previous_doc._version).upsert(previous_doc.as_document)
+        res1 = self.class.versions_collection.find(_orig_id: previous_doc['_orig_id'], _version: previous_doc._version)
+        previous_doc[:_version] = current_version if previous_doc[:_version].nil?
+        self.class.versions_collection.insert_one(previous_doc.as_document) if res1.count == 0
 
         self._based_on_version = _version || current_version
         self._version = current_version+1
 
-        res2 = self.class.collection.where(_id: id, _version: current_version).update(self.as_document)
+        res2 = self.class.collection.find(_id: id, _version: current_version).update_one(self.as_document)
 
         # replay flow if someone else updated the document before us
-        break unless res2['n'] != 1
+        break unless res2.n != 1
       end
     end
 
