@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    mongoid_versioning (0.1.0)
+    mongoid_versioning (0.1.1)
       mongoid (~> 5.0.0)
 
 GEM
