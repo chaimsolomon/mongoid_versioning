@@ -40,6 +40,6 @@ end
 DatabaseCleaner.orm = :mongoid
 DatabaseCleaner.strategy = :truncation
 
-# class MiniTest::Spec
-#   before(:each) { DatabaseCleaner.clean }
-# end
+class MiniTest::Spec
+  before(:each) { DatabaseCleaner.clean }
+end
