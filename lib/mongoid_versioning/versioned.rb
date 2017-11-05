@@ -14,6 +14,7 @@ module MongoidVersioning
         )
 
         class_attribute :version_max
+        class_attribute :version_min_hold_time
 
         before_create :set_initial_version
         after_initialize :revert_id
@@ -33,6 +34,10 @@ module MongoidVersioning
 
       def max_versions(number)
         self.version_max = number.to_i
+      end
+
+      def min_version_hold_time(days)
+        self.version_min_hold_time = days.to_i
       end
     end
 
@@ -113,16 +118,22 @@ module MongoidVersioning
 
         res2 = self.class.collection.find(_id: id, _version: current_version).update_one(self.as_document)
 
-
-
         # replay flow if someone else updated the document before us
         break unless res2.n != 1
       end
-
       if version_max.present? && versions.length > version_max
-        self.class.versions_collection.find(_orig_id: self.id, _version: versions.min_by(&:_version)._version).delete_many
+        if version_min_hold_time.present?
+          d = DateTime.current - version_min_hold_time
+          versions_to_be_deleted = versions.sort_by {|x| x[:_version]}.reverse[version_max..-1].select do |x|
+            x[:updated_at] < d
+          end.collect do |x|
+            {_orig_id: x[:_orig_id], _version: x[:_version]}
+          end
+          versions_to_be_deleted.each do |v|
+            self.class.versions_collection.find(v).delete_one
+          end
+        end
       end
     end
-
   end
 end
